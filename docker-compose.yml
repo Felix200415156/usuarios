@@ -11,7 +11,7 @@ services:
       MYSQL_USER: desarrollador
       MYSQL_PASSWORD: password_seguro_123
     ports:
-      - "3307:3307" # Mapea el puerto 3307 de tu PC al 3306 interno del contenedor
+      - "3307:3307"
     networks:
       - red_interna_proyecto
     volumes:
@@ -25,14 +25,24 @@ services:
     container_name: entorno_programacion
     ports:
       - "8081:8081"
+    environment:
+      - habitaciones_url=http://172.31.89.29
     depends_on:
       - db-servicio
     networks:
       - red_interna_proyecto
+    # El comando 'tail -f /dev/null' es un truco técnico.
+    # Obliga al contenedor a quedarse encendido de forma permanente 
+    # en estado de espera, para que podamos entrar a él a programar.
     command: tail -f /dev/null
+    # Vinculamos la carpeta vacía local con la ruta '/app' del contenedor.
     volumes:
       - ./codigo-fuente:/app
+    # Por defecto, el contenedor iniciará en la carpeta /app
     working_dir: /app
+    
+   
+
 
 networks:
   red_interna_proyecto:
