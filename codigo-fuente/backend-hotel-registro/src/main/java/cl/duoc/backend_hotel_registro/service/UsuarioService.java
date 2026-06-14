@@ -3,6 +3,7 @@ import cl.duoc.backend_hotel_registro.client.HabitacionesClient;
 
 import cl.duoc.backend_hotel_registro.dto.UsuarioCreateDTO;
 import cl.duoc.backend_hotel_registro.dto.Usuariodto;
+import cl.duoc.backend_hotel_registro.exception.RecursoNoEncontradoException;
 import cl.duoc.backend_hotel_registro.model.Usuario;
 import cl.duoc.backend_hotel_registro.repository.UsuarioRepository;
 
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -125,13 +127,31 @@ public Usuario actualizarPorRut(String rut, Usuario nuevosDatos) {
     }).orElse(null);
 }
 
-    public boolean eliminarPorRut(String rut){
-        if(usuarioRepository.existsByRutIgnoreCase(rut)){
+ public boolean eliminarPorRut(String rut) {
+        if(usuarioRepository.existsByRutIgnoreCase(rut)) {
             usuarioRepository.deleteByRutIgnoreCase(rut);
             return true;
-
         }
-        return false;
+       
+        throw new RecursoNoEncontradoException("Usuario no encontrado con RUT: " + rut);
+    }
+    public List<Usuariodto> findAll() {
+        return usuarioRepository.findAll().stream()
+                .map(usuario -> new Usuariodto(
+                        usuario.getId(),
+                        usuario.getRut(),
+                        usuario.getNombreCompleto(),
+                        usuario.getGmail(),
+                        usuario.getTelefono()
+                ))
+                .collect(Collectors.toList());
+    }
+        public Usuariodto findById(Long id) {
+        log.info("Buscando usuario id={}", id);
+        Usuario u = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado: " + id));
+        log.info("Usuario encontrado: nombre={}, gmail={}", u.getNombreCompleto(), u.getGmail());
+        return entidadADto(u);
     }
 
 }
